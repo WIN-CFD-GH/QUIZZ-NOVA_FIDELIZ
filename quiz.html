@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISIÓN WINNER - Cabina de Evaluación Espacial</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Estilos del Ecosistema Espacial -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/space-theme.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body class="scanlines min-h-screen flex flex-col justify-between">
+
+  <!-- Fondo Dinámico Espacial -->
+  <canvas id="space-canvas"></canvas>
+
+  <!-- HUD Superior de la Cabina -->
+  <header class="w-full border-b border-sky-500/20 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      
+      <!-- Datos del Asesor y Día -->
+      <div class="flex items-center gap-3">
+        <span id="hud-avatar-icon" class="text-3xl filter drop-shadow">👨‍🚀</span>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="hud-cadet-name" class="font-bold text-white text-sm sm:text-base">Cadete</span>
+            <span id="hud-cadet-day" class="px-2 py-0.5 rounded bg-sky-500/20 border border-sky-400 text-sky-300 text-xs font-mono font-bold">Día 1</span>
+          </div>
+          <div id="hud-cadet-dni" class="text-xs text-slate-400 font-mono">DNI: - | Área: -</div>
+        </div>
+      </div>
+
+      <!-- Métricas en Tiempo Real: Racha, Timer y Sonido -->
+      <div class="flex items-center gap-3 sm:gap-6">
+        
+        <!-- Racha de Aciertos -->
+        <div id="hud-streak-widget" class="streak-counter" title="Racha de respuestas correctas consecutivas">
+          <span>🔥</span> <span id="hud-streak-count">0</span>
+        </div>
+
+        <!-- Cronómetro de Misión -->
+        <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700 font-mono text-cyan-300 text-sm">
+          <span>⏱️</span> <span id="hud-timer-display">00:00</span>
+        </div>
+
+        <!-- Toggle Modo Inmersivo Espacial -->
+        <button id="btn-immersive-toggle" class="px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center gap-1.5 transition" title="Activar/Desactivar Modo Inmersivo Espacial">
+          <span>🛸</span> <span class="hidden sm:inline">Inmersión:</span> <span id="immersive-toggle-status" class="font-bold text-cyan-400">ON</span>
+        </button>
+
+        <!-- Toggle de Sonido -->
+        <button id="btn-sound-toggle" class="sound-toggle-btn" title="Silenciar / Activar Audio">
+          🔊
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Contenedor Principal: Cabina de Preguntas o Pantalla de Resultados -->
+  <main class="max-w-4xl mx-auto px-4 py-8 w-full my-auto">
+    
+    <!-- ===================================================================== -->
+    <!-- ESTADO 1: CABINA DE EVALUACIÓN (PREGUNTA ACTIVA)                       -->
+    <!-- ===================================================================== -->
+    <div id="quiz-question-view" class="space-y-6">
+      
+      <!-- Barra de Progreso de la Misión (1 a 10) -->
+      <div class="glass-panel p-4">
+        <div class="flex items-center justify-between text-xs font-mono mb-2">
+          <div class="text-sky-300">
+            MISIÓN FORMAL: <span id="quiz-progress-text" class="text-white font-bold">PREGUNTA 1 DE 10</span>
+          </div>
+          <div id="quiz-level-indicator">
+            <!-- Nivel inyectado por JS -->
+          </div>
+        </div>
+        <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-sky-500/30">
+          <div id="quiz-progress-fill" class="bg-gradient-to-r from-sky-500 via-cyan-400 to-purple-500 h-full transition-all duration-300" style="width: 10%;"></div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Pregunta Principal -->
+      <div class="glass-panel p-6 sm:p-8 hud-corner-box">
+        
+        <!-- Encabezado de Pregunta con botón de Audio -->
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <span id="quiz-category-badge" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-600 text-xs font-mono text-slate-300">
+            Categoría
+          </span>
+
+          <button id="btn-listen-audio" class="btn-speech-audio" title="Escuchar locución de la pregunta">
+            <span>🔊</span> <span>Escuchar Audio</span>
+          </button>
+        </div>
+
+        <!-- Enunciado -->
+        <h2 id="quiz-question-statement" class="text-lg sm:text-2xl font-bold text-white mb-6 leading-relaxed">
+          Cargando coordenadas de la pregunta...
+        </h2>
+
+        <!-- Imagen Opcional de Escenario Operativo -->
+        <div id="quiz-question-image-box" class="hidden mb-6 text-center">
+          <img id="quiz-question-image" src="" alt="Escenario Operativo" class="max-h-64 mx-auto rounded-lg border border-sky-500/40">
+        </div>
+
+        <!-- Lista de Opciones (A, B, C, D) -->
+        <div id="quiz-options-container" class="space-y-3 mb-6">
+          <!-- Opciones inyectadas dinámicamente -->
+        </div>
+
+        <!-- Feedback Explicativo tras responder -->
+        <div id="quiz-feedback-box" class="hidden p-4 rounded-xl border mb-6 text-sm">
+          <!-- Mensaje explicativo inyectado -->
+        </div>
+
+        <!-- Botones de Navegación -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+          <button id="btn-quiz-prev" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono text-xs sm:text-sm disabled:opacity-40" disabled>
+            ← Anterior
+          </button>
+          
+          <button id="btn-quiz-next" class="btn-space-primary px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2">
+            <span>Siguiente Pregunta</span> →
+          </button>
+
+          <button id="btn-quiz-finish" class="btn-space-gold px-6 py-2.5 rounded-lg font-bold text-sm hidden">
+            🚀 Finalizar Misión
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- ESTADO 2: PANTALLA DE RESULTADOS Y GAMIFICACIÓN (AL FINALIZAR)         -->
+    <!-- ===================================================================== -->
+    <div id="quiz-results-view" class="hidden space-y-6 relative z-10">
+      
+      <!-- Oscurecimiento galáctico (Fondo) -->
+      <div id="res-dark-overlay" class="fixed inset-0 bg-black/60 z-[-1] opacity-0 transition-opacity duration-1000 pointer-events-none"></div>
+      <!-- Encabezado de Reporte -->
+      <div class="text-center mb-6 mt-4">
+        <h2 class="hud-font text-3xl sm:text-5xl font-extrabold text-white mb-2">
+          🏆 REPORTE DE MISIÓN COMPLETADA
+        </h2>
+        <p class="text-cyan-300 font-mono tracking-widest uppercase text-sm sm:text-base">
+          "Análisis de desempeño del tripulante"
+        </p>
+      </div>
+
+      <!-- Tarjeta Principal de Información -->
+      <div class="glass-panel p-6 border border-sky-500/30 rounded-xl mb-6 flex flex-wrap gap-4 justify-between items-center bg-slate-900/60">
+        <div class="flex flex-col">
+          <span class="text-xs text-slate-400 font-mono">👨‍🚀 Participante</span>
+          <span id="res-participant-name" class="text-lg font-bold text-white"></span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs text-slate-400 font-mono">📅 Fecha</span>
+          <span id="res-date" class="text-lg font-bold text-white"></span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs text-slate-400 font-mono">🛰️ Día Formativo</span>
+          <span id="res-day" class="text-lg font-bold text-white"></span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs text-slate-400 font-mono">⏱️ Tiempo empleado</span>
+          <span id="res-time" class="text-lg font-bold text-white"></span>
+        </div>
+      </div>
+
+      <!-- Estado de la Misión -->
+      <div class="text-center mb-6">
+        <div id="res-mission-status" class="inline-block px-8 py-3 rounded-full font-mono text-xl sm:text-2xl font-extrabold uppercase tracking-widest shadow-lg">
+          <!-- ✅ MISIÓN APROBADA or ⚠️ MISIÓN NO SUPERADA -->
+        </div>
+      </div>
+
+      <!-- Medalla Obtenida (Elemento Principal) -->
+      <div class="text-center mb-12 mt-4" id="res-medal-container">
+        <div id="res-medal-display" class="flex justify-center items-center my-6 relative group">
+          <!-- Halo luminoso galáctico detrás de la medalla -->
+          <div id="res-medal-glow" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vh] h-[50vh] rounded-full blur-[80px] opacity-0 transition-opacity duration-1000 pointer-events-none"></div>
+          
+          <!-- Medalla Imagen (Grande, flotando sin fondos) -->
+          <img id="res-medal-img" src="" alt="Medalla" class="relative z-10 h-[45vh] max-h-[400px] object-contain transition-all duration-[1500ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] transform scale-0 opacity-0 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-105 hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.6)] cursor-pointer" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3176/3176294.png'; console.warn('No se encontró imagen de medalla.');">
+          
+          <!-- Partículas simuladas CSS (opcional visual) -->
+          <div class="absolute inset-0 pointer-events-none z-20 opacity-50" id="res-medal-particles"></div>
+        </div>
+        <div class="text-xs text-slate-400 font-mono mb-1 tracking-widest uppercase opacity-80">Medalla Obtenida</div>
+        <div id="res-medal-name" class="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-200 uppercase tracking-widest relative z-10 drop-shadow-md"></div>
+      </div>
+
+      <!-- Cuadrícula de Métricas -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700 text-center">
+          <div class="text-xs text-slate-400 font-mono">NOTA OBTENIDA</div>
+          <div id="metric-score" class="text-3xl sm:text-4xl font-extrabold font-mono text-cyan-300 mt-1"></div>
+          <div id="metric-score-20" class="text-[11px] text-slate-400 mt-1"></div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700 text-center">
+          <div class="text-xs text-slate-400 font-mono">PORCENTAJE</div>
+          <div id="metric-percent" class="text-3xl sm:text-4xl font-extrabold font-mono text-purple-300 mt-1"></div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700 text-center">
+          <div class="text-xs text-slate-400 font-mono">RESPUESTAS CORRECTAS</div>
+          <div id="metric-correct" class="text-3xl sm:text-4xl font-extrabold font-mono text-green-400 mt-1"></div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700 text-center">
+          <div class="text-xs text-slate-400 font-mono">RESPUESTAS INCORRECTAS</div>
+          <div id="metric-errors" class="text-3xl sm:text-4xl font-extrabold font-mono text-red-400 mt-1"></div>
+        </div>
+      </div>
+
+      <!-- Botones de Acción Posterior a la Misión -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+        <a href="dashboard.html" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-sky-950/70 hover:bg-sky-900 border border-sky-400/50 text-cyan-300 font-mono text-sm flex items-center justify-center gap-2">
+          <span>📊</span> Ver Dashboard Personal
+        </a>
+        
+        <a href="quiz.html" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-mono text-sm flex items-center justify-center gap-2">
+          <span>🔄</span> Repetir Misión
+        </a>
+        
+        <a href="index.html" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-mono text-sm flex items-center justify-center gap-2">
+          <span>🏠</span> Volver al Inicio
+        </a>
+
+        <button id="btn-download-certificate" class="w-full sm:w-auto btn-space-gold px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-sm hidden">
+          <span>📄</span> Descargar Reporte PDF
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal para Ceremonia de Graduación Rango 8 (Inyectado si aplica) -->
+  <div id="graduation-ceremony-modal" class="modal-overlay"></div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="firebase/firebase-config.js"></script>
+
+  <!-- Core Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script src="data/initial-questions.js"></script>
+  <script src="js/space-fx.js"></script>
+  <script src="js/gamification.js"></script>
+  <script src="js/storage-service.js"></script>
+  <script src="js/quiz-engine.js"></script>
+  <script src="js/space-cursor.js"></script>
+
+  <!-- Controlador Específico de quiz.html -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Obtener Cadete Activo
+      const cadet = window.storageService.getActiveCadet();
+      if (!cadet) {
+        alert("No se ha registrado una sesión de asesor activa. Redirigiendo al portal...");
+        window.location.href = "index.html";
+        return;
+      }
+
+      // 2. Renderizar Datos del Asesor en HUD
+      document.getElementById('hud-cadet-name').textContent = cadet.nombreCompleto;
+      document.getElementById('hud-cadet-day').textContent = cadet.misionCompleta || cadet.dia;
+      document.getElementById('hud-cadet-dni').textContent = `DNI: ${cadet.dni} | Área: ${cadet.area}`;
+      
+      const avatarObj = window.WINNER_CONFIG.avatares.find(a => a.id === cadet.avatar);
+      if (avatarObj) document.getElementById('hud-avatar-icon').textContent = avatarObj.icon;
+
+      // 3. Inicializar Preguntas del Quiz (Estricto por Módulo)
+      const questions = await window.quizEngine.buildQuizSet(cadet.diaNumero || cadet.dia);
+      
+      // Iniciar Cronómetro
+      window.quizEngine.startTimer((sec) => {
+        const mins = String(Math.floor(sec / 60)).padStart(2, '0');
+        const secs = String(sec % 60).padStart(2, '0');
+        document.getElementById('hud-timer-display').textContent = `${mins}:${secs}`;
+      });
+
+      // 4. Función de renderizado de la pregunta activa
+      function renderActiveQuestion() {
+        const q = window.quizEngine.getCurrentQuestion();
+        const idx = window.quizEngine.currentIndex;
+        const total = window.quizEngine.questions.length;
+        const savedAnswer = window.quizEngine.selectedAnswers[idx];
+
+        // Progreso
+        document.getElementById('quiz-progress-text').textContent = `PREGUNTA ${idx + 1} DE ${total}`;
+        document.getElementById('quiz-progress-fill').style.width = `${((idx + 1) / total) * 100}%`;
+        
+        // Nivel Badge
+        const nivelLabels = {
+          1: `<span class="px-2 py-0.5 rounded bg-sky-500/20 border border-sky-400 text-sky-300 font-bold">NIVEL 1 • CADETE</span>`,
+          2: `<span class="px-2 py-0.5 rounded bg-blue-500/20 border border-blue-400 text-blue-300 font-bold">NIVEL 2 • PILOTO</span>`,
+          3: `<span class="px-2 py-0.5 rounded bg-purple-500/20 border border-purple-400 text-purple-300 font-bold">NIVEL 3 • COMANDANTE</span>`
+        };
+        document.getElementById('quiz-level-indicator').innerHTML = nivelLabels[q.nivel] || nivelLabels[1];
+        document.getElementById('quiz-category-badge').textContent = q.categoria || 'General';
+
+        // Enunciado
+        document.getElementById('quiz-question-statement').textContent = q.enunciado;
+
+        // Imagen opcional
+        const imgBox = document.getElementById('quiz-question-image-box');
+        const imgEl = document.getElementById('quiz-question-image');
+        if (q.imagenUrl) {
+          imgEl.src = q.imagenUrl;
+          imgBox.classList.remove('hidden');
+        } else {
+          imgBox.classList.add('hidden');
+        }
+
+        // Opciones
+        const optContainer = document.getElementById('quiz-options-container');
+        optContainer.innerHTML = (q.opciones || []).map((op, oIdx) => {
+          let extraClass = '';
+          if (savedAnswer) {
+            extraClass += ' disabled ';
+            if (oIdx === q.respuestaCorrecta) extraClass += ' correct ';
+            else if (oIdx === savedAnswer.selectedIndex) extraClass += ' incorrect ';
+          }
+          return `
+            <div class="quiz-option-card flex items-start gap-3 ${extraClass}" data-index="${oIdx}">
+              <span class="font-mono font-bold text-cyan-400 mt-0.5">[${String.fromCharCode(65 + oIdx)}]</span>
+              <span class="text-slate-200 text-sm sm:text-base">${op}</span>
+            </div>
+          `;
+        }).join('');
+
+        // Feedback explicativo
+        const feedbackBox = document.getElementById('quiz-feedback-box');
+        if (savedAnswer) {
+          feedbackBox.classList.remove('hidden');
+          if (savedAnswer.isCorrect) {
+            feedbackBox.className = "p-4 rounded-xl border border-green-500/50 bg-green-950/30 text-green-300 mb-6 text-sm";
+            feedbackBox.innerHTML = `<strong>✅ ¡Respuesta Correcta (+10 XP)!</strong> ${q.explicacion || ''}`;
+          } else {
+            feedbackBox.className = "p-4 rounded-xl border border-red-500/50 bg-red-950/30 text-red-300 mb-6 text-sm";
+            feedbackBox.innerHTML = `<strong>⚠️ Respuesta Incorrecta.</strong> La opción válida era la [${String.fromCharCode(65 + q.respuestaCorrecta)}]. ${q.explicacion || ''}`;
+          }
+        } else {
+          feedbackBox.classList.add('hidden');
+        }
+
+        // Asignar clics a opciones
+        if (!savedAnswer) {
+          optContainer.querySelectorAll('.quiz-option-card').forEach(card => {
+            card.addEventListener('click', () => {
+              const selectedIdx = Number(card.getAttribute('data-index'));
+              const result = window.quizEngine.selectOption(selectedIdx);
+              document.getElementById('hud-streak-count').textContent = window.quizEngine.streak;
+              renderActiveQuestion();
+            });
+          });
+        }
+
+        // Botones de navegación
+        document.getElementById('btn-quiz-prev').disabled = (idx === 0);
+        const isLast = (idx === total - 1);
+        if (isLast) {
+          document.getElementById('btn-quiz-next').classList.add('hidden');
+          document.getElementById('btn-quiz-finish').classList.remove('hidden');
+        } else {
+          document.getElementById('btn-quiz-next').classList.remove('hidden');
+          document.getElementById('btn-quiz-finish').classList.add('hidden');
+        }
+
+        // Configurar Botón de Audio
+        const btnListen = document.getElementById('btn-listen-audio');
+        btnListen.onclick = () => {
+          btnListen.classList.add('playing');
+          window.spaceAudio?.speakText(
+            q.audioTexto || q.enunciado,
+            () => btnListen.classList.add('playing'),
+            () => btnListen.classList.remove('playing')
+          );
+        };
+      }
+
+      // Eventos de Navegación
+      document.getElementById('btn-quiz-prev').addEventListener('click', () => {
+        if (window.quizEngine.prevQuestion()) renderActiveQuestion();
+      });
+
+      document.getElementById('btn-quiz-next').addEventListener('click', () => {
+        const curAns = window.quizEngine.selectedAnswers[window.quizEngine.currentIndex];
+        if (!curAns) {
+          alert("Debes seleccionar una respuesta antes de continuar con la siguiente pregunta.");
+          return;
+        }
+        if (window.quizEngine.nextQuestion()) renderActiveQuestion();
+      });
+
+      // Finalizar Misión
+      const btnFinish = document.getElementById('btn-quiz-finish');
+      btnFinish.addEventListener('click', async () => {
+        if (btnFinish.disabled) return;
+        
+        const curAns = window.quizEngine.selectedAnswers[window.quizEngine.currentIndex];
+        if (!curAns) {
+          alert("Por favor selecciona una respuesta para esta última pregunta.");
+          return;
+        }
+
+        btnFinish.disabled = true;
+        const originalContent = btnFinish.innerHTML;
+        btnFinish.innerHTML = `<span>Procesando Misión...</span> 🚀`;
+
+        try {
+          // Procesar Evaluación
+          const finishData = await window.quizEngine.finishQuiz(cadet);
+          showMissionResults(finishData);
+        } catch (error) {
+          console.error("Error crítico en finalizar misión:", error);
+          alert("Error de conexión al servidor. Mostrando resultados de forma local...");
+          // Fallback para forzar la vista de resultados incluso si finishQuiz lanza error
+          document.getElementById('quiz-question-view').classList.add('hidden');
+          document.getElementById('quiz-results-view').classList.remove('hidden');
+        } finally {
+          btnFinish.disabled = false;
+          btnFinish.innerHTML = originalContent;
+        }
+      });
+
+      // 5. Función de despliegue de resultados
+      function showMissionResults(data) {
+        document.getElementById('quiz-question-view').classList.add('hidden');
+        document.getElementById('quiz-results-view').classList.remove('hidden');
+
+        const { evaluacion, career, unlockedBadges, isDia11Graduation } = data;
+        const isApproved = evaluacion.metricas.aprobado;
+
+        // Tarjeta Principal
+        document.getElementById('res-participant-name').textContent = evaluacion.participante.nombreCompleto;
+        document.getElementById('res-date').textContent = new Date().toLocaleDateString();
+        document.getElementById('res-day').textContent = evaluacion.sesion.dia;
+        
+        const mins = Math.floor(evaluacion.sesion.tiempoTotalSegundos / 60);
+        const secs = evaluacion.sesion.tiempoTotalSegundos % 60;
+        document.getElementById('res-time').textContent = `${mins}m ${secs}s`;
+
+        // Métricas
+        document.getElementById('metric-score').textContent = `${evaluacion.metricas.puntaje}/100`;
+        document.getElementById('metric-score-20').textContent = `Nota: ${evaluacion.metricas.puntajeSobre20}/20`;
+        document.getElementById('metric-percent').textContent = `${evaluacion.metricas.porcentaje}%`;
+        document.getElementById('metric-correct').textContent = evaluacion.metricas.aciertos;
+        document.getElementById('metric-errors').textContent = evaluacion.metricas.errores;
+
+        // Estado visual y Botón de Certificado
+        const statusBadge = document.getElementById('res-mission-status');
+        const certBtn = document.getElementById('btn-download-certificate');
+
+        if (isApproved) {
+          statusBadge.className = 'inline-block px-8 py-3 rounded-full font-mono text-xl sm:text-2xl font-extrabold uppercase tracking-widest shadow-lg bg-green-500/20 border-2 border-green-400 text-green-300';
+          statusBadge.textContent = '✅ MISIÓN APROBADA';
+          
+          certBtn.classList.remove('hidden');
+          certBtn.onclick = () => {
+            window.location.href = `certificado.html?dni=${cadet.dni}&dia=${encodeURIComponent(cadet.dia)}&score=${evaluacion.metricas.puntaje}`;
+          };
+        } else {
+          statusBadge.className = 'inline-block px-8 py-3 rounded-full font-mono text-xl sm:text-2xl font-extrabold uppercase tracking-widest shadow-lg bg-red-500/20 border-2 border-red-500 text-red-400';
+          statusBadge.textContent = '⚠️ MISIÓN NO SUPERADA';
+          certBtn.classList.add('hidden');
+        }
+
+        // Medalla
+        const medallaNombre = evaluacion.gamificacion.medallaNombre || evaluacion.gamificacion.medalla || "Medalla de Bronce";
+        const medallaImagen = evaluacion.gamificacion.medallaImagen || "medallas/medall_3.png";
+        
+        let medallaDesc = "Aún estás en entrenamiento. Continúa tu preparación espacial.";
+        let glowColor = "bg-orange-500/40";
+        if (evaluacion.metricas.porcentaje >= 95) {
+          glowColor = "bg-amber-400/80"; // Fondo galáctico dorado
+          // Sonido de victoria legendaria
+          if (window.spaceAudio && window.spaceAudio.playCorrect) {
+             window.spaceAudio.playCorrect();
+             setTimeout(() => window.spaceAudio.playCorrect(), 300); // Doble campana
+          }
+          if (typeof confetti === 'function') {
+            setTimeout(() => {
+              const duration = 3 * 1000;
+              const animationEnd = Date.now() + duration;
+              const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+              const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                const particleCount = 50 * (timeLeft / duration);
+                // Lluvia de estrellas doradas y plateadas
+                confetti({ ...defaults, particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 }, colors: ['#fbbf24', '#f59e0b', '#fef3c7', '#ffffff'] });
+              }, 250);
+            }, 500);
+          }
+        }
+        else if (evaluacion.metricas.porcentaje >= 80) {
+          medallaDesc = "Excelente trabajo. Has superado satisfactoriamente la misión.";
+          glowColor = "bg-yellow-400/50";
+          if (typeof confetti === 'function') {
+            setTimeout(() => {
+              confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#d97706'] });
+            }, 500);
+          }
+        }
+        else if (evaluacion.metricas.porcentaje >= 60) {
+          medallaDesc = "Has demostrado buenos conocimientos. Tu misión avanza.";
+          glowColor = "bg-slate-300/40";
+        }
+
+        const imgEl = document.getElementById('res-medal-img');
+        const glowEl = document.getElementById('res-medal-glow');
+        
+        const fileName = medallaImagen.split('/').pop();
+        const diaNum = cadet.diaNumero || evaluacion.sesion.diaNumero || 1;
+
+        console.log("[7] Cargando imagen de medalla...");
+        const testImg = new Image();
+        testImg.onload = () => {
+          console.log(`✅ Medalla encontrada: ${fileName}`);
+          console.log(`✅ Ruta cargada: ${medallaImagen}`);
+          console.log(`✅ Día formativo: Día ${diaNum}`);
+          imgEl.src = medallaImagen;
+        };
+        testImg.onerror = () => {
+          console.warn(`⚠️ Error: No se encontró la imagen ${fileName}. Usando imagen de respaldo.`);
+          imgEl.src = 'https://cdn-icons-png.flaticon.com/512/3176/3176294.png';
+        };
+        testImg.src = medallaImagen;
+
+        console.log("[8] Mostrando pantalla de resultados");
+
+        document.getElementById('res-medal-name').textContent = medallaNombre.trim(); // Se mantiene tal cual para mostrar 🥇 MEDALLA DE ORO
+        
+        // Animación de aparición principal
+        setTimeout(() => {
+          imgEl.classList.remove('scale-0', 'opacity-0');
+          imgEl.classList.add('scale-100', 'opacity-100');
+          
+          glowEl.className = `absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vh] h-[50vh] rounded-full blur-[80px] opacity-0 transition-opacity duration-1000 pointer-events-none ${glowColor}`;
+          setTimeout(() => glowEl.classList.replace('opacity-0', 'opacity-100'), 300);
+
+          // Inyectar partículas simples CSS
+          const particlesContainer = document.getElementById('res-medal-particles');
+          if (particlesContainer && evaluacion.metricas.porcentaje >= 80) {
+            let pHTML = '';
+            for(let i=0; i<20; i++) {
+              const x = Math.random() * 100;
+              const y = Math.random() * 100;
+              const size = Math.random() * 4 + 2;
+              const delay = Math.random() * 2;
+              pHTML += `<div class="absolute rounded-full bg-white animate-pulse" style="left:${x}%; top:${y}%; width:${size}px; height:${size}px; animation-delay:${delay}s; box-shadow: 0 0 8px rgba(255,255,255,0.8);"></div>`;
+            }
+            particlesContainer.innerHTML = pHTML;
+          }
+        }, 100);
+
+        // Efecto de oscurecimiento de fondo
+        setTimeout(() => {
+          const overlay = document.getElementById('res-dark-overlay');
+          if (overlay) overlay.classList.replace('opacity-0', 'opacity-100');
+        }, 50);
+
+        // Ceremonias y Graduación
+        const percent = evaluacion.metricas.porcentaje;
+        
+        if (career.isMaxRank || isDia11Graduation || (cadet.dia === 'Día 11' && isApproved)) {
+          setTimeout(() => {
+            window.gamificationEngine.triggerGraduationCeremony(cadet, () => {
+              window.location.href = `certificado.html?dni=${cadet.dni}&dia=${encodeURIComponent(cadet.dia)}&tipo=graduacion`;
+            });
+          }, 2000);
+        } else {
+          if (percent >= 95) {
+            // Ceremonia Legendaria
+            setTimeout(() => {
+              if (window.spaceAudio) window.spaceAudio.playCorrect();
+              launchCosmicConfetti();
+              setTimeout(launchCosmicConfetti, 500);
+            }, 500);
+          } else if (percent >= 80) {
+            // Ceremonia Aprobación
+            setTimeout(() => {
+              launchCosmicConfetti();
+            }, 500);
+          }
+        }
+      }
+
+      // Renderizar primera pregunta
+      renderActiveQuestion();
+
+      // Toggle Sonido
+      const soundBtn = document.getElementById('btn-sound-toggle');
+      if (soundBtn) {
+        soundBtn.textContent = window.spaceAudio.isMuted() ? '🔇' : '🔊';
+        soundBtn.addEventListener('click', () => {
+          const isMuted = window.spaceAudio.toggleMute();
+          soundBtn.textContent = isMuted ? '🔇' : '🔊';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

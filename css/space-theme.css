@@ -1,0 +1,359 @@
+/* ==========================================================================
+   MISIÓN WINNER - NOVA FIDELIZ - QUIZZES
+   TEMA ESPACIAL FUTURISTA & CYBERPUNK HUD (space-theme.css)
+   ========================================================================== */
+
+:root {
+  --space-bg-darkest: #030712;
+  --space-bg-dark: #070c1b;
+  --space-bg-card: rgba(13, 22, 44, 0.72);
+  --space-bg-card-hover: rgba(19, 33, 66, 0.88);
+  --space-border: rgba(56, 189, 248, 0.22);
+  --space-border-glow: rgba(56, 189, 248, 0.6);
+  
+  --neon-cyan: #00f0ff;
+  --neon-blue: #3b82f6;
+  --neon-purple: #a855f7;
+  --neon-magenta: #ec4899;
+  --neon-gold: #f59e0b;
+  --neon-green: #10b981;
+  --neon-red: #ef4444;
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --font-hud: 'Orbitron', 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Cursor Espacial Inmersivo */
+html.space-cursor-active,
+html.space-cursor-active * {
+  cursor: none !important;
+}
+
+#space-cursor-canvas {
+  pointer-events: none;
+  z-index: 999999;
+}
+.glass-panel {
+  background: var(--space-bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--space-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.55),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--space-border-glow);
+  box-shadow: 0 12px 40px 0 rgba(0, 240, 255, 0.15),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-panel-glow {
+  border-color: rgba(0, 240, 255, 0.45);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.05);
+}
+
+/* HUD Text & Glows */
+.hud-font {
+  font-family: var(--font-hud);
+  letter-spacing: 0.06em;
+}
+
+.glow-cyan {
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.65), 0 0 25px rgba(0, 240, 255, 0.35);
+}
+
+.glow-gold {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.75), 0 0 25px rgba(245, 158, 11, 0.4);
+}
+
+.glow-purple {
+  text-shadow: 0 0 12px rgba(168, 85, 247, 0.75), 0 0 25px rgba(168, 85, 247, 0.4);
+}
+
+/* Fondo Dinámico Espacial */
+#space-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #050814 65%, #02040a 100%);
+}
+
+/* Scanlines HUD sutiles */
+.scanlines {
+  position: relative;
+}
+.scanlines::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+              linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 20;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* HUD Corners */
+.hud-corner-box {
+  position: relative;
+}
+.hud-corner-box::before, .hud-corner-box::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--neon-cyan);
+  pointer-events: none;
+}
+.hud-corner-box::before {
+  top: -1px; left: -1px;
+  border-top: 2px solid var(--neon-cyan);
+  border-left: 2px solid var(--neon-cyan);
+}
+.hud-corner-box::after {
+  bottom: -1px; right: -1px;
+  border-bottom: 2px solid var(--neon-cyan);
+  border-right: 2px solid var(--neon-cyan);
+}
+
+/* Botones Futuristas */
+.btn-space-primary {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(59, 130, 246, 0.3) 100%);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 10px rgba(0, 240, 255, 0.15);
+  font-family: var(--font-hud);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.btn-space-primary:hover {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.4) 0%, rgba(59, 130, 246, 0.6) 100%);
+  color: #ffffff;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.3);
+  transform: translateY(-2px);
+}
+.btn-space-primary:active {
+  transform: translateY(1px);
+}
+
+.btn-space-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.4) 100%);
+  border: 1px solid var(--neon-gold);
+  color: #fbbf24;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.35);
+  font-family: var(--font-hud);
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+.btn-space-gold:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.45) 0%, rgba(217, 119, 6, 0.7) 100%);
+  color: #ffffff;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.7);
+  transform: translateY(-2px);
+}
+
+/* Barra de Carrera Espacial */
+.career-progress-container {
+  position: relative;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 9999px;
+  overflow: hidden;
+  height: 20px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.career-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #00f0ff 40%, #a855f7 75%, #f59e0b 100%);
+  border-radius: 9999px;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.8);
+  position: relative;
+  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.career-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 2.2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Animaciones Espaciales */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1.5deg); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.9)); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* Animación Cohete Final */
+@keyframes rocketLaunch {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  30% { transform: translateY(-30px) scale(1.05); }
+  100% { transform: translateY(-700px) scale(0.4); opacity: 0; }
+}
+
+.rocket-launching {
+  animation: rocketLaunch 2s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+}
+
+/* Efecto Warp Speed / Túnel Hiperespacial */
+.warp-tunnel {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(circle, rgba(0,240,255,0.2) 0%, rgba(7,12,27,0.95) 75%, #030712 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: warpEntrance 0.8s ease-out;
+}
+
+@keyframes warpEntrance {
+  0% { opacity: 0; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Estilos de Rango y Badges para los 12 Niveles de la Carrera Espacial */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-family: var(--font-hud);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rank-badge-0 { background: rgba(148, 163, 184, 0.15); border: 1px solid #94a3b8; color: #cbd5e1; }
+.rank-badge-1 { background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; }
+.rank-badge-2 { background: rgba(59, 130, 246, 0.15); border: 1px solid #60a5fa; color: #93c5fd; }
+.rank-badge-3 { background: rgba(99, 102, 241, 0.15); border: 1px solid #818cf8; color: #a5b4fc; }
+.rank-badge-4 { background: rgba(16, 185, 129, 0.15); border: 1px solid #34d399; color: #6ee7b7; }
+.rank-badge-5 { background: rgba(168, 85, 247, 0.15); border: 1px solid #c084fc; color: #e9d5ff; }
+.rank-badge-6 { background: rgba(217, 70, 239, 0.15); border: 1px solid #e879f9; color: #f5d0fe; }
+.rank-badge-7 { background: rgba(244, 114, 182, 0.15); border: 1px solid #f472b6; color: #fbcfe8; }
+.rank-badge-8 { background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; color: #fde68a; box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
+.rank-badge-9 { background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fed7aa; }
+.rank-badge-10 { 
+  background: rgba(0, 240, 255, 0.2); 
+  border: 1px solid #00f0ff; 
+  color: #cffafe; 
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); 
+}
+.rank-badge-11 { 
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(236, 72, 153, 0.35) 100%);
+  border: 1.5px solid #fbbf24;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), inset 0 0 10px rgba(245, 158, 11, 0.2);
+  animation: pulseGlow 2s infinite;
+}
+
+/* Opciones de Pregunta */
+.quiz-option-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1.5px solid rgba(56, 189, 248, 0.25);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.quiz-option-card:hover:not(.disabled) {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.12);
+  transform: translateX(4px);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+}
+
+.quiz-option-card.selected {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.2);
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.4);
+}
+
+.quiz-option-card.correct {
+  border-color: var(--neon-green) !important;
+  background: rgba(16, 185, 129, 0.25) !important;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5) !important;
+}
+
+.quiz-option-card.incorrect {
+  border-color: var(--neon-red) !important;
+  background: rgba(239, 68, 68, 0.25) !important;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5) !important;
+}
+
+/* HUD Sound Toggle */
+.sound-toggle-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--space-border);
+  background: var(--space-bg-card);
+  color: var(--neon-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.sound-toggle-btn:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(7, 12, 27, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.6);
+}

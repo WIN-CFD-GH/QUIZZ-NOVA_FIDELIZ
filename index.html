@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISIÓN WINNER - Portal del Cadete Espacial | Nova Fideliz</title>
+  <meta name="description" content="Portal de evaluación gamificada y entrenamiento espacial para asesores de Fidelización Winner.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Configuración y Guardia de Seguridad -->
+  <script src="js/config.js"></script>
+  <script src="js/auth-guard.js"></script>
+
+  <!-- Estilos del Ecosistema Espacial -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/space-theme.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body class="scanlines min-h-screen flex flex-col justify-between">
+
+  <!-- Fondo Canvas Dinámico de Galaxia -->
+  <canvas id="space-canvas"></canvas>
+
+  <!-- Barra de Navegación Espacial -->
+  <header class="w-full border-b border-sky-500/20 bg-slate-950/70 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl animate-float">🚀</div>
+        <div>
+          <h1 class="hud-font font-extrabold text-sm sm:text-lg tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-purple-400">
+            MISIÓN WINNER • NOVA FIDELIZ
+          </h1>
+          <p class="text-[11px] text-slate-400 font-mono tracking-widest uppercase">
+            Academia Galáctica de Formación Continua
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <!-- Toggle Modo Inmersivo Espacial -->
+        <button id="btn-immersive-toggle" class="px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center gap-1.5 transition" title="Activar/Desactivar Modo Inmersivo Espacial">
+          <span>🛸</span> <span class="hidden sm:inline">Inmersión:</span> <span id="immersive-toggle-status" class="font-bold text-cyan-400">ON</span>
+        </button>
+        <a href="dashboard.html" class="btn-admin-link px-3 py-1.5 rounded-lg bg-sky-950/60 hover:bg-sky-900 border border-sky-500/40 text-sky-300 text-xs sm:text-sm font-mono flex items-center gap-1.5 transition" title="Acceso de Comandante al Dashboard">
+          <span>📊</span> <span class="hidden sm:inline">Dashboard</span>
+        </a>
+        <a href="hangar_preguntas.html" class="btn-admin-link px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs sm:text-sm font-mono flex items-center gap-1.5 transition" title="Acceso de Comandante al Hangar de Preguntas">
+          <span>🛰️</span> <span class="hidden sm:inline">Hangar de Preguntas</span>
+        </a>
+        <button id="btn-sound-toggle" class="sound-toggle-btn" title="Activar/Silenciar Efectos de Audio">
+          🔊
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Central: Portal del Participante -->
+  <main class="max-w-4xl mx-auto px-4 py-8 w-full my-auto">
+    
+    <!-- Encabezado de Misión -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/40 text-cyan-300 text-xs font-mono mb-3">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        SISTEMA DE IDENTIFICACIÓN DE TRIPULANTES EN CURSO
+      </div>
+      <h2 class="hud-font text-2xl sm:text-4xl font-extrabold text-white mb-2 glow-cyan">
+        REGISTRO DE VUELO ESPACIAL
+      </h2>
+      <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
+        Ingresa tus coordenadas de asesor para iniciar la misión evaluativa del día. Asciende en la <strong class="text-amber-400 font-bold">Carrera Espacial MISIÓN WINNER</strong>.
+      </p>
+    </div>
+
+    <!-- Tarjeta de Registro Glassmorphism -->
+    <div class="glass-panel p-6 sm:p-10 hud-corner-box">
+      <form id="form-cadete-registro" class="space-y-6">
+        
+        <!-- Fila 1: DNI y Nombre Completo -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label for="input-dni" class="block text-xs font-mono text-cyan-300 uppercase tracking-wider mb-2">
+              DNI del Asesor <span class="text-red-400">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="input-dni" 
+              name="dni" 
+              required 
+              maxlength="8" 
+              pattern="[0-9]{8}"
+              placeholder="Ej: 74829103"
+              class="input-space font-mono text-lg"
+              autocomplete="off"
+            >
+            <div id="dni-status-feedback" class="text-xs font-mono mt-1 text-slate-400">
+              Ingresa 8 dígitos numéricos.
+            </div>
+          </div>
+
+          <div>
+            <label for="input-nombre" class="block text-xs font-mono text-cyan-300 uppercase tracking-wider mb-2">
+              Nombre Completo <span class="text-red-400">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="input-nombre" 
+              name="nombreCompleto" 
+              required 
+              placeholder="Ej: Carlos Mendoza Ruiz"
+              class="input-space text-lg"
+              autocomplete="name"
+            >
+          </div>
+        </div>
+
+        <!-- Fila 2: Área Operativa y Código Capa -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label for="select-area-operativa" class="block text-xs font-mono text-cyan-300 uppercase tracking-wider mb-2">
+              Área Operativa <span class="text-red-400">*</span>
+            </label>
+            <div class="relative">
+              <select 
+                id="select-area-operativa" 
+                name="area" 
+                disabled 
+                class="input-space font-bold text-cyan-300 bg-slate-900/90 border-cyan-500/50 cursor-not-allowed select-none appearance-none pr-10"
+              >
+                <option value="🚀 Fidelizaciones" selected>🚀 Fidelizaciones</option>
+              </select>
+              <input type="hidden" id="input-area-fixed" name="areaHidden" value="🚀 Fidelizaciones">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-cyan-400 bg-cyan-950/90 px-2 py-0.5 rounded border border-cyan-500/40 pointer-events-none">
+                🔒 Bloqueada
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-mono mt-1">Área asignada: [Fidelizaciones] (Solo lectura)</p>
+          </div>
+
+          <div>
+            <label for="input-codigo-capa" class="block text-xs font-mono text-cyan-300 uppercase tracking-wider mb-2">
+              Código de Capacitación (Capa) <span class="text-red-400">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="input-codigo-capa" 
+              name="codigoCapa" 
+              required 
+              placeholder="Ej: CAPA-2026-09"
+              class="input-space font-mono uppercase"
+              value="CAPA-WINNER-2026"
+            >
+          </div>
+        </div>
+
+        <!-- Fila 3: Misión Formativa a Evaluar y Fecha -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="sm:col-span-2">
+            <div class="flex items-center justify-between mb-2">
+              <label for="select-dia" class="block text-sm font-mono text-cyan-300 font-bold uppercase tracking-wider">
+                🎯 Misión Formativa a Evaluar <span class="text-red-400">*</span>
+              </label>
+              <span id="mission-phase-badge" class="text-[11px] font-mono px-2.5 py-0.5 rounded bg-blue-950/80 border border-blue-400/40 text-blue-300">
+                Fase 1: Fundamentos
+              </span>
+            </div>
+
+            <!-- Selector estilizado con opciones dinámicas -->
+            <select id="select-dia" name="dia" required class="input-space font-bold text-base tracking-wide bg-slate-900/95 border-2 border-cyan-400/60 shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+              <!-- Cargado dinámicamente con los 11 días oficiales -->
+            </select>
+
+            <!-- Descripción requerida debajo del selector -->
+            <p class="text-xs text-slate-300 font-mono mt-2.5 p-3 rounded-lg bg-slate-900/80 border border-slate-700/80 leading-relaxed italic">
+              "Cada día formativo representa una misión dentro del Universo WINNER. Completa todas las evaluaciones para convertirte en Tripulante Oficial de la Nave Fidelizaciones."
+            </p>
+          </div>
+
+          <div>
+            <label for="input-fecha" class="block text-xs font-mono text-cyan-300 uppercase tracking-wider mb-2">
+              Fecha de Registro
+            </label>
+            <input 
+              type="date" 
+              id="input-fecha" 
+              name="fecha" 
+              required 
+              class="input-space font-mono text-slate-300"
+            >
+          </div>
+        </div>
+
+        <!-- Selector de Avatar de Tripulante -->
+        <div>
+          <label class="block text-xs font-mono text-cyan-300 uppercase tracking-wider mb-3">
+            Elige tu Avatar de la Academia:
+          </label>
+          <div id="avatar-selector-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <!-- Inyectado por JS -->
+          </div>
+          <input type="hidden" id="selected-avatar-input" name="avatar" value="avatar_helios">
+        </div>
+
+        <!-- Previsualización de Carrera Espacial si existe historial previo -->
+        <div id="cadet-previous-career-container" class="hidden">
+          <!-- Renderizado dinámico -->
+        </div>
+
+        <!-- Botón de Despegue -->
+        <div class="pt-4 text-center">
+          <button 
+            type="submit" 
+            id="btn-iniciar-mision" 
+            class="w-full sm:w-auto px-10 py-4 rounded-xl btn-space-primary font-bold text-lg flex items-center justify-center gap-3 mx-auto"
+          >
+            <span class="text-2xl">🚀</span> INICIAR MISIÓN ESPACIAL
+          </button>
+          <p class="text-xs text-slate-500 font-mono mt-3">
+            ⚠️ Nota mínima aprobatoria: 80% (16/20). La misión consta de 10 preguntas cronometradas.
+          </p>
+        </div>
+
+      </form>
+    </div>
+
+  </main>
+
+  <!-- Footer Futurista -->
+  <footer class="w-full border-t border-sky-500/20 py-4 text-center bg-slate-950/80 backdrop-blur-md">
+    <p class="text-xs font-mono text-slate-400">
+      MISIÓN WINNER • NOVA FIDELIZ © 2026 | Sistema de Formación Gamificada con Tecnología Espacial
+    </p>
+  </footer>
+
+  <!-- Firebase Scripts (Compat / Modular Fallback) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="firebase/firebase-config.js"></script>
+
+  <!-- Core Scripts -->
+  <script src="data/initial-questions.js"></script>
+  <script src="js/space-fx.js"></script>
+  <script src="js/gamification.js"></script>
+  <script src="js/storage-service.js"></script>
+  <script src="js/space-cursor.js"></script>
+
+  <!-- Controlador Específico de index.html -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Establecer fecha de hoy
+      const inputFecha = document.getElementById('input-fecha');
+      if (inputFecha) inputFecha.value = new Date().toISOString().split('T')[0];
+
+      // 2. Área fija bloqueada en Fidelizaciones
+      const inputAreaFixed = document.getElementById('input-area-fixed');
+      if (inputAreaFixed) inputAreaFixed.value = "🚀 Fidelizaciones";
+
+      // 3. Poblar Misiones Formativas con colores progresivos e iconos
+      const selectDia = document.getElementById('select-dia');
+      const phaseBadge = document.getElementById('mission-phase-badge');
+
+      if (selectDia) {
+        selectDia.innerHTML = window.WINNER_CONFIG.diasFormacion.map(d => {
+          let styleAttr = `color: ${d.colorHex}; background-color: #0b1120; font-weight: bold; padding: 8px;`;
+          if (d.numero === 11) {
+            styleAttr += ' background-color: #1e1b4b; text-shadow: 0 0 10px #fbbf24; font-size: 1.05rem;';
+          }
+          return `<option value="${d.short}" data-numero="${d.numero}" data-fase="${d.fase}" data-color="${d.colorHex}" style="${styleAttr}">${d.nombre}</option>`;
+        }).join('');
+
+        // Actualizar badge de fase y resplandor al cambiar de misión
+        const updateMissionVisuals = () => {
+          const selectedOpt = selectDia.options[selectDia.selectedIndex];
+          if (!selectedOpt) return;
+          const fase = selectedOpt.getAttribute('data-fase');
+          const color = selectedOpt.getAttribute('data-color') || '#00f0ff';
+          const num = parseInt(selectedOpt.getAttribute('data-numero')) || 1;
+
+          if (phaseBadge) {
+            phaseBadge.textContent = (num === 11) ? "🏆 MISIÓN FINAL DE GRADUACIÓN" : fase;
+            phaseBadge.style.color = color;
+            phaseBadge.style.borderColor = color;
+            if (num === 11) {
+              phaseBadge.className = "text-xs font-mono px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/30 via-yellow-500/30 to-amber-500/30 border border-amber-400 text-yellow-300 font-extrabold shadow-[0_0_20px_rgba(251,191,36,0.8)] animate-pulse";
+            } else {
+              phaseBadge.className = "text-[11px] font-mono px-2.5 py-0.5 rounded bg-slate-900 border";
+            }
+          }
+
+          selectDia.style.borderColor = color;
+          selectDia.style.color = color;
+          selectDia.style.boxShadow = `0 0 25px ${color}55`;
+        };
+
+        selectDia.addEventListener('change', updateMissionVisuals);
+        updateMissionVisuals(); // Inicializar con el primero
+      }
+
+      // 4. Renderizar Avatares
+      const avatarGrid = document.getElementById('avatar-selector-grid');
+      const avatarInput = document.getElementById('selected-avatar-input');
+      if (avatarGrid) {
+        avatarGrid.innerHTML = window.WINNER_CONFIG.avatares.map((av, idx) => `
+          <div class="avatar-choice-card p-3 text-center ${idx === 0 ? 'selected' : ''}" data-avatar="${av.id}">
+            <div class="text-3xl sm:text-4xl mb-1">${av.icon}</div>
+            <div class="text-xs font-bold text-white">${av.nombre}</div>
+            <div class="text-[10px] text-slate-400 truncate">${av.rol}</div>
+          </div>
+        `).join('');
+
+        avatarGrid.querySelectorAll('.avatar-choice-card').forEach(card => {
+          card.addEventListener('click', () => {
+            avatarGrid.querySelectorAll('.avatar-choice-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            avatarInput.value = card.getAttribute('data-avatar');
+            window.spaceAudio?.playBeep(800, 0.05);
+          });
+        });
+      }
+
+      // 5. Autocompletar y verificar historial de DNI
+      const inputDni = document.getElementById('input-dni');
+      const inputNombre = document.getElementById('input-nombre');
+      const careerBox = document.getElementById('cadet-previous-career-container');
+
+      inputDni.addEventListener('input', async (e) => {
+        const dni = e.target.value.replace(/\D/g, '');
+        e.target.value = dni;
+
+        if (dni.length === 8) {
+          const evals = await window.storageService.getEvaluacionesByDni(dni);
+          if (evals && evals.length > 0) {
+            const last = evals[0];
+            if (!inputNombre.value && last.participante?.nombreCompleto) {
+              inputNombre.value = last.participante.nombreCompleto;
+            }
+            // Mostrar widget de carrera espacial acumulada
+            const totalXP = evals.reduce((sum, item) => sum + (Number(item.metricas?.puntaje) || 0), 0);
+            const career = window.gamificationEngine.calculateCareerProgression(evals, totalXP);
+            careerBox.classList.remove('hidden');
+            careerBox.innerHTML = `
+              <div class="mb-4">
+                <div class="text-xs font-mono text-cyan-300 mb-1">PROGRESIÓN REGISTRADA EN LA FLOTA:</div>
+                ${window.gamificationEngine.renderCareerWidgetHTML(career)}
+              </div>
+            `;
+          } else {
+            careerBox.classList.add('hidden');
+          }
+        } else {
+          careerBox.classList.add('hidden');
+        }
+      });
+
+      // 6. Manejo de Envío del Formulario
+      const form = document.getElementById('form-cadete-registro');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const dni = inputDni.value.trim();
+        const nombreCompleto = inputNombre.value.trim();
+        const area = "🚀 Fidelizaciones";
+        const codigoCapa = document.getElementById('input-codigo-capa').value.trim();
+        const dia = selectDia.value;
+        const selectedOpt = selectDia.options[selectDia.selectedIndex];
+        const misionCompleta = selectedOpt ? selectedOpt.textContent : dia;
+        const diaNumero = parseInt(dia.replace(/\D/g, '')) || 1;
+        const fecha = inputFecha.value;
+        const avatar = avatarInput.value;
+
+        if (!dni || dni.length !== 8) {
+          alert("El DNI debe contener exactamente 8 dígitos.");
+          inputDni.focus();
+          return;
+        }
+
+        // Validar si ya rindió el mismo día
+        const prevToday = await window.storageService.checkDuplicateAttempt(dni, dia);
+        if (prevToday && prevToday.length > 0) {
+          const proceed = confirm(`⚠️ El asesor con DNI ${dni} ya rindió una evaluación para el '${dia}'. ¿Deseas iniciar un nuevo intento de entrenamiento?`);
+          if (!proceed) return;
+        }
+
+        const cadetSession = {
+          dni,
+          nombreCompleto,
+          area,
+          codigoCapa,
+          dia,
+          misionCompleta,
+          diaNumero,
+          fecha,
+          avatar
+        };
+
+        window.storageService.setActiveCadet(cadetSession);
+        window.spaceAudio?.playBeep(1000, 0.1);
+
+        // Despegue hacia la cabina del quiz
+        window.location.href = "quiz.html";
+      });
+
+      // 7. Toggle de Sonido
+      const soundBtn = document.getElementById('btn-sound-toggle');
+      if (soundBtn) {
+        soundBtn.textContent = window.spaceAudio.isMuted() ? '🔇' : '🔊';
+        soundBtn.addEventListener('click', () => {
+          const isMuted = window.spaceAudio.toggleMute();
+          soundBtn.textContent = isMuted ? '🔇' : '🔊';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

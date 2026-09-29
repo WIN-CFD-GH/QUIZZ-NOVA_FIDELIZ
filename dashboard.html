@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISIÓN WINNER - Centro de Control de la Academia Espacial WINNER</title>
+  
+  <!-- Configuración y Guardia de Seguridad Estricto (Protección Directa por URL) -->
+  <script src="js/config.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script>
+    // Bloqueo inmediato antes de renderizar la vista
+    window.adminAuthGuard.protectCurrentPage();
+  </script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- SheetJS (XLSX) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Estilos del Ecosistema Espacial -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/space-theme.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="scanlines min-h-screen flex flex-col justify-between" id="dashboard-view-container">
+
+  <!-- Fondo Canvas Dinámico -->
+  <canvas id="space-canvas"></canvas>
+
+  <!-- Header Superior -->
+  <header class="w-full border-b border-sky-500/20 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="text-3xl animate-float" title="Volver al Portal">🛰️</a>
+        <div>
+          <h1 class="hud-font font-extrabold text-sm sm:text-base lg:text-lg tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-purple-400">
+            Centro de Control de la Academia Espacial WINNER
+          </h1>
+          <div class="flex flex-wrap items-center gap-2 mt-0.5">
+            <p class="text-[11px] text-slate-400 font-mono tracking-widest uppercase">
+              Módulo Administrativo de Gestión • Nova Fidelizaciones
+            </p>
+            <span id="firestore-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 flex items-center gap-1">
+              ☁️ Firestore: Conectado
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <!-- Toggle Modo Inmersivo Espacial -->
+        <button id="btn-immersive-toggle" class="px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center gap-1.5 transition" title="Activar/Desactivar Modo Inmersivo Espacial">
+          <span>🛸</span> <span class="hidden sm:inline">Inmersión:</span> <span id="immersive-toggle-status" class="font-bold text-cyan-400">ON</span>
+        </button>
+        <button id="btn-refresh-data" class="px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs sm:text-sm font-mono flex items-center gap-1.5 transition" title="Refrescar métricas">
+          <span>🔄</span> <span class="hidden sm:inline">Sincronizar</span>
+        </button>
+        <button id="btn-export-excel" class="px-3 py-1.5 rounded-lg bg-green-950/70 hover:bg-green-900 border border-green-500/50 text-green-300 text-xs sm:text-sm font-mono flex items-center gap-1.5 transition">
+          <span>📊</span> <span class="hidden sm:inline">Exportar Excel</span>
+        </button>
+        <a href="hangar_preguntas.html" class="px-3 py-1.5 rounded-lg bg-sky-950/70 hover:bg-sky-900 border border-sky-500/50 text-sky-300 text-xs sm:text-sm font-mono flex items-center gap-1.5 transition">
+          <span>⚙️</span> <span class="hidden sm:inline">Hangar Preguntas</span>
+        </a>
+        <!-- Botón Cerrar Sesión Admin -->
+        <button onclick="window.adminAuthGuard.logout()" class="px-3 py-1.5 rounded-lg bg-red-950/70 hover:bg-red-900 border border-red-500/50 text-red-300 text-xs sm:text-sm font-mono flex items-center gap-1.5 transition" title="Cerrar sesión de Administrador">
+          <span>🔒</span> <span class="hidden sm:inline">Salir</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Central del Dashboard -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full space-y-8">
+    
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 1: KPIs PRINCIPALES                                         -->
+    <!-- =================================================================== -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      
+      <div class="glass-panel p-4 hud-corner-box">
+        <div class="text-xs font-mono text-slate-400 uppercase">Evaluaciones Totales</div>
+        <div id="kpi-total-evals" class="text-2xl sm:text-3xl font-extrabold font-mono text-cyan-300 mt-1">0</div>
+        <div class="text-[11px] text-slate-500 font-mono mt-1">Misiones completadas</div>
+      </div>
+
+      <div class="glass-panel p-4 hud-corner-box">
+        <div class="text-xs font-mono text-slate-400 uppercase">Cadetes Evaluados</div>
+        <div id="kpi-participantes" class="text-2xl sm:text-3xl font-extrabold font-mono text-white mt-1">0</div>
+        <div class="text-[11px] text-slate-500 font-mono mt-1">Asesores únicos (DNI)</div>
+      </div>
+
+      <div class="glass-panel p-4 hud-corner-box">
+        <div class="text-xs font-mono text-slate-400 uppercase">Promedio General</div>
+        <div id="kpi-promedio" class="text-2xl sm:text-3xl font-extrabold font-mono text-amber-300 mt-1">0 pts</div>
+        <div class="text-[11px] text-slate-500 font-mono mt-1">Escala sobre 100</div>
+      </div>
+
+      <div class="glass-panel p-4 hud-corner-box">
+        <div class="text-xs font-mono text-slate-400 uppercase">Mejor Calificación</div>
+        <div id="kpi-mejor-puntaje" class="text-2xl sm:text-3xl font-extrabold font-mono text-green-400 mt-1">0 pts</div>
+        <div class="text-[11px] text-slate-500 font-mono mt-1">Récord de la flota</div>
+      </div>
+
+      <div class="glass-panel p-4 hud-corner-box col-span-2 sm:col-span-1">
+        <div class="text-xs font-mono text-slate-400 uppercase">% de Aprobación</div>
+        <div id="kpi-aprobacion" class="text-2xl sm:text-3xl font-extrabold font-mono text-purple-300 mt-1">0%</div>
+        <div class="text-[11px] text-slate-500 font-mono mt-1">Criterio: &ge; 80%</div>
+      </div>
+
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 2: EVOLUTIVO POR ASESOR                                     -->
+    <!-- =================================================================== -->
+    <div class="glass-panel p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="hud-font text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <span>📈</span> EVOLUTIVO HISTÓRICO POR ASESOR
+          </h2>
+          <p class="text-xs text-slate-400 font-mono">
+            Curva de aprendizaje, promedio acumulado y progresión hacia la Nave Fidelizaciones
+          </p>
+        </div>
+
+        <div class="w-full sm:w-80">
+          <select id="select-asesor-evolutivo" class="input-space text-sm">
+            <option value="">Cargando asesores...</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="advisor-evolutivo-details">
+        <div class="text-slate-500 font-mono text-sm py-4">Selecciona un asesor para ver su radiografía formativa.</div>
+      </div>
+
+      <!-- Gráfico de Curva de Aprendizaje -->
+      <div class="mt-6 bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+        <canvas id="chart-advisor-line" height="90"></canvas>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 3: REPORTERÍA GLOBAL (BARRAS POR DÍA & DISTRIBUCIÓN)        -->
+    <!-- =================================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Gráfico de Barras por Día -->
+      <div class="glass-panel p-6 lg:col-span-2">
+        <h3 class="hud-font text-base sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
+          <span>📊</span> RENDIMIENTO Y PARTICIPACIÓN POR DÍA
+        </h3>
+        <p class="text-xs text-slate-400 font-mono mb-4">Promedio de nota y volumen de evaluaciones por módulo</p>
+        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+          <canvas id="chart-days-bars" height="130"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico de Torta / Distribución -->
+      <div class="glass-panel p-6">
+        <h3 class="hud-font text-base sm:text-lg font-bold text-white mb-2 flex items-center gap-2">
+          <span>📉</span> DISTRIBUCIÓN DE RANGOS
+        </h3>
+        <p class="text-xs text-slate-400 font-mono mb-4">Niveles de desempeño de la flota</p>
+        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 flex items-center justify-center">
+          <canvas id="chart-distribution-pie" height="180"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 4: RANKING DE MEJORES TRIPULANTES                           -->
+    <!-- =================================================================== -->
+    <div class="glass-panel p-6 sm:p-8">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="hud-font text-lg sm:text-xl font-bold text-amber-300 flex items-center gap-2">
+            <span>🏆</span> SALÓN DE LA FAMA • MEJORES TRIPULANTES
+          </h2>
+          <p class="text-xs text-slate-400 font-mono">Top cadetes con mayor experiencia acumulada (XP)</p>
+        </div>
+        <span class="px-3 py-1 rounded bg-amber-500/10 border border-amber-400 text-amber-300 text-xs font-mono font-bold">
+          TOP 10 FLOTA
+        </span>
+      </div>
+
+      <div id="ranking-container" class="space-y-2">
+        <!-- Renderizado dinámico -->
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 5: TABLA DINÁMICA DE RESULTADOS CON FILTROS AVANZADOS       -->
+    <!-- =================================================================== -->
+    <div class="glass-panel p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="hud-font text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <span>📋</span> REGISTRO DETALLADO DE EVALUACIONES
+          </h2>
+          <p class="text-xs text-slate-400 font-mono">Explorador de auditoría y trazabilidad en tiempo real</p>
+        </div>
+
+        <!-- Buscador Rápido -->
+        <div class="w-full sm:w-72">
+          <input 
+            type="text" 
+            id="search-table" 
+            placeholder="🔍 Buscar por nombre o DNI..." 
+            class="input-space text-xs"
+          >
+        </div>
+      </div>
+
+      <!-- Barra de Filtros -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+        <div>
+          <label class="block text-[11px] font-mono text-cyan-300 mb-1">Filtrar por Día:</label>
+          <select id="filter-dia" class="input-space text-xs py-1.5">
+            <option value="">Todos los Días</option>
+            <option value="Día 1">Día 1</option>
+            <option value="Día 2">Día 2</option>
+            <option value="Día 3">Día 3</option>
+            <option value="Día 4">Día 4</option>
+            <option value="Día 5">Día 5</option>
+            <option value="Día 6">Día 6</option>
+            <option value="Día 7">Día 7</option>
+            <option value="Día 8">Día 8</option>
+            <option value="Día 9">Día 9</option>
+            <option value="Día 10">Día 10</option>
+            <option value="Día 11">Día 11 (Graduación)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-mono text-cyan-300 mb-1">Filtrar por Código Capa:</label>
+          <select id="filter-capa" class="input-space text-xs py-1.5">
+            <option value="">Todas las Capas</option>
+            <option value="CAPA-WINNER-2026">CAPA-WINNER-2026</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-mono text-cyan-300 mb-1">Estado de Aprobación:</label>
+          <select id="filter-estado" class="input-space text-xs py-1.5">
+            <option value="">Todos los Estados</option>
+            <option value="APROBADO">Solo Aprobados (≥ 80%)</option>
+            <option value="REFORZAR CONOCIMIENTOS">Solo Requieren Refuerzo</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla de Resultados -->
+      <div class="overflow-x-auto">
+        <table class="table-space text-xs sm:text-sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Asesor / DNI</th>
+              <th>Misión</th>
+              <th>Fecha</th>
+              <th>Puntaje</th>
+              <th>Estado</th>
+              <th>Rango</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="table-results-body">
+            <!-- Cargado por JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-sky-500/20 py-4 text-center bg-slate-950/80 backdrop-blur-md">
+    <p class="text-xs font-mono text-slate-400">
+      MISIÓN WINNER • NOVA FIDELIZ © 2026 | Centro de Mando Operativo y Formativo
+    </p>
+  </footer>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="firebase/firebase-config.js"></script>
+
+  <!-- Core Scripts -->
+  <script src="js/config.js"></script>
+  <script src="data/initial-questions.js"></script>
+  <script src="js/space-fx.js"></script>
+  <script src="js/gamification.js"></script>
+  <script src="js/storage-service.js"></script>
+  <script src="js/excel-service.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/space-cursor.js"></script>
+</body>
+</html>

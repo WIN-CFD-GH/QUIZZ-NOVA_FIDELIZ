@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =========================================================================
+    // REGLAS OFICIALES DE SEGURIDAD - MISIÓN WINNER ACADEMY
+    // Proyecto: quizzes-nova-fideliz
+    // =========================================================================
+
+    // 1. Colección: preguntas (Banco Oficial de Reactivos)
+    // - Lectura permitida para cargar evaluaciones
+    // - Escritura validada con campos obligatorios
+    match /preguntas/{preguntaId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.diaFormativo != null 
+                            && request.resource.data.pregunta != null;
+      allow delete: if true;
+    }
+
+    // 2. Colección: resultados (Historial Evaluativo)
+    // - Permite registro inmutable de notas
+    // - Prohíbe eliminación y edición para evitar alteración de historial
+    match /resultados/{resultadoId} {
+      allow read: if true;
+      allow create: if request.resource.data.participanteId != null 
+                    && request.resource.data.puntaje >= 0;
+      allow update: if false;
+      allow delete: if false; // Inmutable: protección total contra borrado accidental
+    }
+
+    // 3. Colección: quiz_attempts (Telemetría de Intentos)
+    // - Registro append-only del tiempo y respuestas
+    match /quiz_attempts/{attemptId} {
+      allow read: if true;
+      allow create: if request.resource.data.participanteId != null;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // 4. Colección: participantes (Progreso y Carrera Espacial)
+    // - Perfil acumulado por DNI
+    match /participantes/{dni} {
+      allow read: if true;
+      allow create, update: if request.resource.data.dni == dni;
+      allow delete: if false;
+    }
+
+    // 5. Colección: insignias (Condecoraciones Desbloqueadas)
+    match /insignias/{insigniaId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    // 6. Colección: ranking (Tablero de Honor TOP 10)
+    match /ranking/{dni} {
+      allow read: if true;
+      allow write: if true;
+      allow delete: if false;
+    }
+
+    // 7. Colección: configuracion (Parámetros Globales)
+    match /configuracion/{configId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 8. Colección: auditoria (Bitácora de Eventos)
+    // - Logs append-only estrictamente inmutables
+    match /auditoria/{auditId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISIÓN WINNER - Certificado Oficial de Acreditación Espacial</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- html2pdf.js CDN para descarga directa en PDF vectorial -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Estilos del Ecosistema Espacial -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/space-theme.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    /* Estilos específicos de impresión y PDF del Certificado */
+    .certificate-frame {
+      background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+      border: 8px double #fbbf24;
+      box-shadow: 0 0 45px rgba(245, 158, 11, 0.35);
+      position: relative;
+    }
+    .watermark-winner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-25deg);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 6rem;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.03);
+      pointer-events: none;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .gold-emboss {
+      color: #fbbf24;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 15px rgba(251, 191, 36, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen py-8 px-4 flex flex-col items-center justify-center">
+
+  <!-- Barra de Acciones Superior (No se imprime) -->
+  <div class="no-print max-w-4xl w-full mb-6 flex flex-wrap items-center justify-between gap-4">
+    <a href="index.html" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-mono text-sm flex items-center gap-2">
+      ← Volver al Portal
+    </a>
+    
+    <div class="flex items-center gap-3">
+      <!-- Toggle Modo Inmersivo Espacial -->
+      <button id="btn-immersive-toggle" class="px-3 py-2 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center gap-1.5 transition" title="Activar/Desactivar Modo Inmersivo Espacial">
+        <span>🛸</span> <span class="hidden sm:inline">Inmersión:</span> <span id="immersive-toggle-status" class="font-bold text-cyan-400">ON</span>
+      </button>
+      <button id="btn-print-native" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-mono text-sm flex items-center gap-2">
+        <span>🖨️</span> Imprimir
+      </button>
+      <button id="btn-download-pdf" class="btn-space-gold px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2">
+        <span>📄</span> DESCARGAR CERTIFICADO EN PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- DIPLOMA / CERTIFICADO GALÁCTICO (Área de captura e impresión)          -->
+  <!-- ===================================================================== -->
+  <div id="certificate-render-target" class="certificate-frame max-w-4xl w-full p-8 sm:p-14 rounded-2xl relative overflow-hidden text-center my-auto">
+    
+    <!-- Marca de Agua -->
+    <div class="watermark-winner">WINNER ACADEMY</div>
+
+    <!-- Bordes Angulares Estilo Certificado -->
+    <div class="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-amber-400 pointer-events-none"></div>
+    <div class="absolute top-3 right-3 w-8 h-8 border-t-2 border-r-2 border-amber-400 pointer-events-none"></div>
+    <div class="absolute bottom-3 left-3 w-8 h-8 border-b-2 border-l-2 border-amber-400 pointer-events-none"></div>
+    <div class="absolute bottom-3 right-3 w-8 h-8 border-b-2 border-r-2 border-amber-400 pointer-events-none"></div>
+
+    <!-- Encabezado Institucional -->
+    <div class="flex items-center justify-center gap-3 mb-4">
+      <div class="text-4xl sm:text-5xl">🚀</div>
+      <div>
+        <h3 class="hud-font font-extrabold text-sm sm:text-base tracking-[0.2em] text-cyan-400">
+          ACADEMIA GALÁCTICA WINNER • FLOTA NOVA FIDELIZ
+        </h3>
+        <p class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">
+          Comandancia General de Capacitación & Desarrollo
+        </p>
+      </div>
+      <div class="text-4xl sm:text-5xl">⭐</div>
+    </div>
+
+    <!-- Título Principal del Certificado -->
+    <h1 id="cert-title-main" class="hud-font text-2xl sm:text-4xl font-extrabold gold-emboss my-4 tracking-wider">
+      CERTIFICADO DE ACREDITACIÓN ESPACIAL
+    </h1>
+
+    <p class="text-xs sm:text-sm text-slate-300 font-mono uppercase tracking-widest mb-6">
+      La Comandancia y Dirección de Formación hace constar que:
+    </p>
+
+    <!-- Nombre del Asesor -->
+    <div class="my-6">
+      <div id="cert-cadet-name" class="hud-font text-2xl sm:text-4xl font-extrabold text-white underline decoration-amber-400 underline-offset-8">
+        CARLOS MENDOZA RUIZ
+      </div>
+      <div id="cert-cadet-dni" class="text-sm font-mono text-cyan-300 mt-3">
+        DNI: 74829103 • Área: Fidelización Call Center
+      </div>
+    </div>
+
+    <!-- Descripción del Reconocimiento -->
+    <p id="cert-description" class="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed my-6">
+      Ha superado satisfactoriamente los estándares operativos y de calidad en la misión evaluativa de 
+      <strong id="cert-dia-title" class="text-amber-300 font-bold">Día 1 - Fundamentos y Protocolo Inicial</strong>,
+      alcanzando una calificación sobresaliente de <strong id="cert-score-value" class="text-cyan-300 font-mono">90/100 (18/20)</strong>.
+    </p>
+
+    <!-- Bloque Especial para Tripulante de la Nave Fidelizaciones (Rango 8) -->
+    <div id="cert-special-graduation-block" class="hidden my-6 p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/50">
+      <div class="text-xs font-mono text-amber-300 font-bold uppercase tracking-widest mb-1">
+        👑 ASIGNACIÓN OFICIAL A LA NAVE INSIGNIA
+      </div>
+      <blockquote class="text-xs sm:text-sm text-cyan-200 italic font-medium leading-relaxed">
+        "Felicitaciones Tripulante. Has completado tu formación y has sido asignado oficialmente a la nave FIDELIZACIONES de la MISIÓN WINNER. Tu preparación ha concluido. El viaje recién comienza."
+      </blockquote>
+    </div>
+
+    <!-- Firmas Digitales y Sellos Holográficos -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 items-end mt-12 pt-6 border-t border-slate-800">
+      
+      <!-- Firma 1: Dirección de Formación -->
+      <div class="text-center">
+        <div class="font-serif italic text-amber-300 text-xl font-bold mb-1 opacity-90 select-none">
+          M. V. Winner
+        </div>
+        <div class="w-44 h-0.5 bg-slate-600 mx-auto mb-1"></div>
+        <div class="text-xs font-bold text-white uppercase">Comandante Formativo</div>
+        <div class="text-[10px] text-slate-400 font-mono">Dirección Academia WINNER</div>
+      </div>
+
+      <!-- Sello Holográfico Central -->
+      <div class="flex flex-col items-center justify-center">
+        <div class="w-24 h-24 rounded-full border-2 border-amber-400 bg-amber-500/10 flex flex-col items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+          <span class="text-2xl">🛡️</span>
+          <span class="text-[9px] font-mono font-bold text-amber-300 tracking-tighter uppercase mt-0.5">ACREDITADO</span>
+          <span class="text-[8px] font-mono text-cyan-300 font-bold">WINNER 2026</span>
+        </div>
+      </div>
+
+      <!-- Firma 2: Coordinación de Operaciones -->
+      <div class="text-center">
+        <div class="font-serif italic text-cyan-300 text-xl font-bold mb-1 opacity-90 select-none">
+          J. Leonil O.
+        </div>
+        <div class="w-44 h-0.5 bg-slate-600 mx-auto mb-1"></div>
+        <div class="text-xs font-bold text-white uppercase">Jefatura de Fidelizaciones</div>
+        <div class="text-[10px] text-slate-400 font-mono">Flota Nova Telecom</div>
+      </div>
+
+    </div>
+
+    <!-- Pie del Certificado con Folio y Fecha -->
+    <div class="flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-slate-400 mt-8 pt-4 border-t border-slate-800/60">
+      <div>
+        FOLIO DE VERIFICACIÓN: <span id="cert-folio-id" class="text-amber-400 font-bold">WN-NF-748291-2026</span>
+      </div>
+      <div id="cert-emission-date">
+        FECHA DE EMISIÓN: 28 de Septiembre de 2026
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase/firebase-config.js"></script>
+
+  <!-- Core Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/storage-service.js"></script>
+  <script src="js/gamification.js"></script>
+  <script src="js/space-cursor.js"></script>
+
+  <!-- Lógica de Certificado -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Obtener Parámetros URL o Sesión
+      const params = new URLSearchParams(window.location.search);
+      const dni = params.get('dni');
+      const diaParam = params.get('dia');
+      const scoreParam = params.get('score');
+      const tipoParam = params.get('tipo');
+
+      let cadetData = window.storageService.getActiveCadet();
+      let evaluations = [];
+
+      if (dni) {
+        evaluations = await window.storageService.getEvaluacionesByDni(dni);
+      }
+
+      const activeEval = evaluations.length > 0 ? evaluations[0] : null;
+
+      const nombre = activeEval?.participante?.nombreCompleto || cadetData?.nombreCompleto || "Asesor Calificado";
+      const asesorDni = dni || activeEval?.participante?.dni || cadetData?.dni || "00000000";
+      const area = activeEval?.participante?.area || cadetData?.area || "Fidelización Call Center";
+      const dia = diaParam || activeEval?.sesion?.dia || cadetData?.dia || "Día 1";
+      const score = scoreParam || activeEval?.metricas?.puntaje || 90;
+      const score20 = (score / 5).toFixed(1);
+
+      // 2. Pintar en el Certificado
+      document.getElementById('cert-cadet-name').textContent = nombre.toUpperCase();
+      document.getElementById('cert-cadet-dni').textContent = `DNI: ${asesorDni} • Área: ${area}`;
+      document.getElementById('cert-dia-title').textContent = dia;
+      document.getElementById('cert-score-value').textContent = `${score}/100 (${score20}/20)`;
+      document.getElementById('cert-folio-id').textContent = `WN-NF-${asesorDni}-${Date.now().toString().slice(-6)}`;
+      document.getElementById('cert-emission-date').textContent = `FECHA DE EMISIÓN: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+
+      // 3. Si es Graduación de Tripulante Oficial (Nivel 11 / Día 11)
+      if (tipoParam === 'graduacion' || dia === 'Día 11') {
+        document.getElementById('cert-title-main').textContent = "DIPLOMA SUPREMO DE GRADUACIÓN ESPACIAL";
+        document.getElementById('cert-special-graduation-block').classList.remove('hidden');
+        document.getElementById('cert-description').innerHTML = `
+          Ha culminado exitosamente todo el programa formativo de 11 días de la Academia Galáctica, acreditando excelencia operativa,
+          altos estándares de resolución y lealtad con el cliente, siendo promovido formalmente como:
+          <br><strong class="hud-font text-lg text-amber-300">TRIPULANTE OFICIAL DE LA MISIÓN WINNER - NAVE FIDELIZACIONES</strong>.
+        `;
+
+        if (window.spaceShipCursor) {
+          window.spaceShipCursor.setGoldenMode(true);
+        }
+      }
+
+      // 4. Descargar PDF con html2pdf
+      const btnPdf = document.getElementById('btn-download-pdf');
+      btnPdf.addEventListener('click', () => {
+        btnPdf.disabled = true;
+        btnPdf.textContent = "⏳ Generando PDF...";
+
+        const element = document.getElementById('certificate-render-target');
+        const opt = {
+          margin: 0.3,
+          filename: `Certificado_Winner_${asesorDni}_${dia.replace(/\s+/g, '_')}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#030712' },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+          btnPdf.disabled = false;
+          btnPdf.innerHTML = "<span>📄</span> DESCARGAR CERTIFICADO EN PDF";
+        }).catch(err => {
+          console.error(err);
+          btnPdf.disabled = false;
+          btnPdf.innerHTML = "<span>📄</span> DESCARGAR CERTIFICADO EN PDF";
+          window.print();
+        });
+      });
+
+      // Imprimir nativo
+      document.getElementById('btn-print-native').addEventListener('click', () => {
+        window.print();
+      });
+    });
+  </script>
+</body>
+</html>
